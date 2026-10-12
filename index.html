@@ -462,20 +462,23 @@ const MEMBERS=["Park Jinho","Trần Việt Anh Duy","Nguyễn Thị Ngọc Hân"
 "Huỳnh Trung Nghĩa","Eun Cho"];
 const PUBLISHERS=["Phạm Trần Mai Phương","Phạm Huỳnh Phương Thảo","Nguyễn Thị Ánh Đào"];
 const SPORT_DEF=[
- {n:"Đi bộ/Chạy bộ",k:"sp.run",icon:"🏃",c:"blue"},
- {n:"Cầu lông",k:"sp.bad",icon:"🏸",c:"red"},
- {n:"Bóng đá",k:"sp.foot",icon:"⚽",c:"green"},
+ {n:"Walk/Run",k:"sp.run",icon:"🏃",c:"blue"},
+ {n:"Badminton",k:"sp.bad",icon:"🏸",c:"red"},
+ {n:"Football",k:"sp.foot",icon:"⚽",c:"green"},
  {n:"Pickleball",k:"sp.pick",icon:"🏓",c:"yellow"},
  {n:"Tennis",k:"sp.tennis",icon:"🎾",c:"teal"},
- {n:"Thử thách thêm",k:"sp.bonus",icon:"⭐",c:"black"}];
-const SESSION_SPORTS=["Cầu lông","Bóng đá","Pickleball","Tennis"];
-const SPORT_COUNT=SPORT_DEF.filter(x=>x.n!=="Thử thách thêm").length;
+ {n:"Challenge",k:"sp.bonus",icon:"⭐",c:"black"}];
+const SESSION_SPORTS=["Badminton","Football","Pickleball","Tennis"];
+const SPORT_COUNT=SPORT_DEF.filter(x=>x.n!=="Challenge").length;
 const COLORS={blue:"#0b5ed7",red:"#e0144c",yellow:"#f5a623",green:"#00a05a",black:"#17181c",teal:"#0097a7"};
 const RINGC=["blue","black","red","yellow","green"];
 const PLAT={Facebook:"🔵",Instagram:"🟣",TikTok:"⚫",YouTube:"🔴",LinkedIn:"🔷",Threads:"⚪",X:"✖️",Pinterest:"📌",Behance:"🅱️",Zalo:"🔹"};
 const WR=[[500,500],[400,400],[300,300],[200,200],[100,100]];
 const BFP=[[78,780],[65,650],[52,520],[26,260],[13,130]];
 const KEY="stepup15.v1", GOAL=300;
+const LEGACY_SPORT={"Đi bộ/Chạy bộ":"Walk/Run","Cầu lông":"Badminton","Bóng đá":"Football",
+  "Thử thách thêm":"Challenge","Đi bộ / Chạy":"Walk/Run","Hoạt động khác":"other"};
+const normSport=n=>LEGACY_SPORT[String(n||"").trim()]||String(n||"").trim();
 
 /* ===== I18N ===== */
 const I18N={
@@ -647,6 +650,7 @@ if(!Array.isArray(S.sessions)) S.sessions=[];
 if(!S.team) S.team={folder:""};
 /* migrate v1 → v2 fields */
 MEMBERS.forEach(m=>S.logs[m].forEach(r=>{
+  r.sport=normSport(r.sport);
   if(r.proof===undefined||r.proof===""||r.proof===true) r.proof=(r.source==="yes"||r.link||r.social==="yes")?"drive":"none";
   if(r.status===undefined) r.status=(r.hr==="ok")?"verified":"pending";
   delete r.social; delete r.hr; delete r.link; delete r.source;}));
@@ -691,15 +695,16 @@ let tmr; function toast(m){const el=$("#toast");el.textContent=m;el.classList.ad
 function lvOf(v,tb){const h=tb.find(r=>v>=r[0]);return h?{lv:tb.length-tb.indexOf(h),pts:h[1]}:{lv:0,pts:0};}
 function nextStep(v,tb){const asc=[...tb].reverse(),up=asc.find(r=>r[0]>v);
   return up?{need:up[0]-v,lv:tb.length-tb.findIndex(r=>r[0]===up[0])}:null;}
-const sportDef=n=>SPORT_DEF.find(s=>s.n===n)||SPORT_DEF[0];
+const sportDef=n=>SPORT_DEF.find(s=>s.n===normSport(n))||SPORT_DEF[0];
 
 function calc(name){
   const rows=S.logs[name]||[];
   let km=0,ses=0,bonus=0,sourced=0,verified=0;const used=new Set();
   rows.forEach(r=>{
-    if(r.sport==="Đi bộ/Chạy bộ"){km+=Number(r.km||0);used.add(r.sport);}
-    else if(r.sport==="Thử thách thêm"){bonus+=Number(r.bonus||0);}
-    else if(SESSION_SPORTS.includes(r.sport)){ses++;used.add(r.sport);}
+    const sp=normSport(r.sport);
+    if(sp==="Walk/Run"){km+=Number(r.km||0);used.add(sp);}
+    else if(sp==="Challenge"){bonus+=Number(r.bonus||0);}
+    else if(SESSION_SPORTS.includes(sp)){ses++;used.add(sp);}
     if(r.proof&&r.proof!=="none")sourced++;
     if(r.status==="verified")verified++;});
   const a=lvOf(km,WR),b=lvOf(ses,BFP);
@@ -722,9 +727,9 @@ const isoDate=v=>{
   return `${p.getFullYear()}-${pad(p.getMonth()+1)}-${pad(p.getDate())}`;};
 function applyRemote(d){
   MEMBERS.forEach(m=>S.logs[m]=[]);
-  (d.rows||[]).forEach(r=>{if(MEMBERS.includes(r.member))S.logs[r.member].push({...r,date:isoDate(r.date)});});
+  (d.rows||[]).forEach(r=>{if(MEMBERS.includes(r.member))S.logs[r.member].push({...r,sport:normSport(r.sport),date:isoDate(r.date)});});
   S.posts=(Array.isArray(d.posts)?d.posts:[]).map(x=>({...x,date:isoDate(x.date)}));
-  S.sessions=(Array.isArray(d.sessions)?d.sessions:[]).map(x=>({...x,date:isoDate(x.date)}));
+  S.sessions=(Array.isArray(d.sessions)?d.sessions:[]).map(x=>({...x,activity:normSport(x.activity),date:isoDate(x.date)}));
   if(d.team){["folder"].forEach(k=>{if(d.team[k]!==undefined)S.team[k]=d.team[k];});}
   save();
 }
@@ -749,7 +754,7 @@ function applyLang(){
   $$(".langsw button").forEach(b=>b.classList.toggle("on",b.dataset.lang===LANG));
   $$("[data-i18n]").forEach(el=>el.textContent=t(el.dataset.i18n));
   const gv=$("#g-act").value;
-  $("#g-act").innerHTML=SPORT_DEF.filter(x=>x.n!=="Thử thách thêm").map(x=>`<option value="${esc(x.n)}">${x.icon} ${esc(t(x.k))}</option>`).join("")
+  $("#g-act").innerHTML=SPORT_DEF.filter(x=>x.n!=="Challenge").map(x=>`<option value="${esc(x.n)}">${x.icon} ${esc(t(x.k))}</option>`).join("")
     +`<option value="other">👥 ${esc(t("group.other"))}</option>`;
   $("#g-act").value=gv||SPORT_DEF[0].n;
   $("#sports").innerHTML=SPORT_DEF.map(s=>
@@ -790,11 +795,11 @@ $("#p-source").innerHTML=opts;
 $("#p-publisher").innerHTML=PUBLISHERS.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join("");
 $("#sel-member").addEventListener("change",()=>renderAll());
 ["#f-filter","#f-sort"].forEach(s=>$(s).addEventListener("change",renderLog));
-let SPORT="Đi bộ/Chạy bộ",EDITING=null,POSTS_ALL=false;
+let SPORT="Walk/Run",EDITING=null,POSTS_ALL=false;
 function syncForm(){
   const v=$("#f-val");
-  if(SPORT==="Đi bộ/Chạy bộ"){$("#l-val").textContent=t("f.km");v.step="0.1";v.placeholder=LANG==="vi"?"VD: 5.2":"e.g. 5.2";$("#tip").innerHTML=t("tip.run");}
-  else if(SPORT==="Thử thách thêm"){$("#l-val").textContent=t("f.bonus");v.step="10";v.placeholder=LANG==="vi"?"VD: 50":"e.g. 50";$("#tip").innerHTML=t("tip.bonus");}
+  if(SPORT==="Walk/Run"){$("#l-val").textContent=t("f.km");v.step="0.1";v.placeholder=LANG==="vi"?"VD: 5.2":"e.g. 5.2";$("#tip").innerHTML=t("tip.run");}
+  else if(SPORT==="Challenge"){$("#l-val").textContent=t("f.bonus");v.step="10";v.placeholder=LANG==="vi"?"VD: 50":"e.g. 50";$("#tip").innerHTML=t("tip.bonus");}
   else{$("#l-val").textContent=t("f.min");v.step="5";v.placeholder=LANG==="vi"?"VD: 60":"e.g. 60";$("#tip").innerHTML=t("tip.ses");}
 }
 $("#f-date").value=new Date().toISOString().slice(0,10);
@@ -804,16 +809,16 @@ $("#p-date").value=new Date().toISOString().slice(0,10);
 $("#btn-add").addEventListener("click",async()=>{
   const name=$("#sel-member").value,date=$("#f-date").value,val=Number($("#f-val").value||0);
   if(!date)return toast(t("t.pickDate"));
-  if(SPORT==="Đi bộ/Chạy bộ"&&val<1)return toast(t("t.minKm"));
+  if(SPORT==="Walk/Run"&&val<1)return toast(t("t.minKm"));
   if(SESSION_SPORTS.includes(SPORT)&&val<30)return toast(t("t.minMin"));
-  if(SPORT==="Thử thách thêm"&&val<=0)return toast(t("t.needBonus"));
+  if(SPORT==="Challenge"&&val<=0)return toast(t("t.needBonus"));
   const proof=$("#f-proof").value;
   const row={id:uid(),member:name,date,sport:SPORT,
-    km:SPORT==="Đi bộ/Chạy bộ"?val:0,min:SESSION_SPORTS.includes(SPORT)?val:0,
-    bonus:SPORT==="Thử thách thêm"?val:0,proof,
+    km:SPORT==="Walk/Run"?val:0,min:SESSION_SPORTS.includes(SPORT)?val:0,
+    bonus:SPORT==="Challenge"?val:0,proof,
     status:proof!=="none"?"verified":"pending",ts:Date.now()};
   S.logs[name].push(row);save();$("#f-val").value="";
-  renderAll();toast(t("t.added")+" · +"+nf(val)+" "+(SPORT==="Đi bộ/Chạy bộ"?t("u.km"):SPORT==="Thử thách thêm"?t("u.pt"):t("u.min")));
+  renderAll();toast(t("t.added")+" · +"+nf(val)+" "+(SPORT==="Walk/Run"?t("u.km"):SPORT==="Challenge"?t("u.pt"):t("u.min")));
   if(api()){const b=$("#btn-add");b.disabled=true;await push({action:"add",row});b.disabled=false;}
 });
 
@@ -845,7 +850,7 @@ function renderMe(){
 function renderLog(){
   const name=$("#sel-member").value,fs=$("#f-filter").value,so=$("#f-sort").value;
   let rows=(S.logs[name]||[]).map((r,i)=>({...r,_i:i}));
-  if(fs)rows=rows.filter(r=>r.sport===fs);
+  if(fs)rows=rows.filter(r=>normSport(r.sport)===fs);
   rows.sort((a,b)=>so==="asc"?-byDateDesc(a,b):byDateDesc(a,b));
   $("#log-count").textContent=(S.logs[name]||[]).length+" "+t("log.records");
   const box=$("#log");
@@ -869,7 +874,7 @@ function renderLog(){
           <div class="fld"><label>${esc(t("f.date"))}</label><input type="date" id="e-date" value="${esc(r.date)}"></div>
           <div class="fld"><label>${esc(t("f.sport"))}</label><select id="e-sport">
             ${SPORT_DEF.map(s=>`<option value="${esc(s.n)}"${s.n===r.sport?" selected":""}>${s.icon} ${esc(t(s.k))}</option>`).join("")}</select></div>
-          <div class="fld"><label id="e-lab">${esc(r.sport==="Đi bộ/Chạy bộ"?t("f.km"):r.sport==="Thử thách thêm"?t("f.bonus"):t("f.min"))}</label>
+          <div class="fld"><label id="e-lab">${esc(r.sport==="Walk/Run"?t("f.km"):r.sport==="Challenge"?t("f.bonus"):t("f.min"))}</label>
             <input type="number" id="e-val" min="0" step="0.1" value="${r.km||r.min||r.bonus||0}"></div>
           <div class="fld"><label>${esc(t("f.proof"))}</label><select id="e-proof">
             <option value="none"${!r.proof||r.proof==="none"?" selected":""}>${esc(t("f.proof.none"))}</option>
@@ -888,16 +893,16 @@ function renderLog(){
     EDITING=EDITING===b.dataset.id?null:b.dataset.id;renderLog();
     const sel=$("#e-sport");
     if(sel)sel.addEventListener("change",()=>{const v=sel.value;
-      $("#e-lab").textContent=v==="Đi bộ/Chạy bộ"?t("f.km"):v==="Thử thách thêm"?t("f.bonus"):t("f.min");});}));
+      $("#e-lab").textContent=v==="Walk/Run"?t("f.km"):v==="Challenge"?t("f.bonus"):t("f.min");});}));
   $$("#log .cancelx").forEach(b=>b.addEventListener("click",()=>{EDITING=null;renderLog();}));
   $$("#log .savex").forEach(b=>b.addEventListener("click",async()=>{
     const i=+b.dataset.i,id=b.dataset.id,sp=$("#e-sport").value,val=Number($("#e-val").value||0);
-    if(sp==="Đi bộ/Chạy bộ"&&val<1)return toast(t("t.minKm"));
+    if(sp==="Walk/Run"&&val<1)return toast(t("t.minKm"));
     if(SESSION_SPORTS.includes(sp)&&val<30)return toast(t("t.minMin"));
-    if(sp==="Thử thách thêm"&&val<=0)return toast(t("t.needBonus"));
+    if(sp==="Challenge"&&val<=0)return toast(t("t.needBonus"));
     const patch={date:$("#e-date").value,sport:sp,
-      km:sp==="Đi bộ/Chạy bộ"?val:0,min:SESSION_SPORTS.includes(sp)?val:0,
-      bonus:sp==="Thử thách thêm"?val:0,proof:$("#e-proof").value};
+      km:sp==="Walk/Run"?val:0,min:SESSION_SPORTS.includes(sp)?val:0,
+      bonus:sp==="Challenge"?val:0,proof:$("#e-proof").value};
     Object.assign(S.logs[name][i],patch);save();EDITING=null;renderAll();toast(t("t.updated"));
     await push({action:"update",id,patch});}));
   $$("#log .dl").forEach(b=>b.addEventListener("click",async()=>{
@@ -1056,8 +1061,8 @@ function renderGroup(){
   const box=$("#grouplog");
   if(!rows.length){box.innerHTML=`<div class="empty"><em>👥</em>${esc(t("group.empty"))}</div>`;return;}
   box.innerHTML=rows.map(r=>{
-    const d=SPORT_DEF.find(x=>x.n===r.activity),col=d?COLORS[d.c]:COLORS.black;
-    const label=d?t(d.k):(!r.activity||r.activity==="other"?t("group.other"):r.activity);
+    const d=SPORT_DEF.find(x=>x.n===normSport(r.activity)),col=d?COLORS[d.c]:COLORS.black;
+    const label=d?t(d.k):(!r.activity||normSport(r.activity)==="other"?t("group.other"):r.activity);
     const big=Number(r.members||0)>=5;
     return `<div class="item" style="color:${col}"><span class="dot"></span>
       <div class="main"><b style="color:var(--ink)">${d?d.icon:"👥"} ${esc(label)}</b>
