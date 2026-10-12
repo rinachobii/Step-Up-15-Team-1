@@ -815,6 +815,7 @@ $("#btn-add").addEventListener("click",async()=>{
   const proof=$("#f-proof").value;
   const row={id:uid(),member:name,date,sport:SPORT,
     km:SPORT==="Walk/Run"?val:0,min:SESSION_SPORTS.includes(SPORT)?val:0,
+    session:SESSION_SPORTS.includes(SPORT)?1:0,
     bonus:SPORT==="Challenge"?val:0,proof,
     status:proof!=="none"?"verified":"pending",ts:Date.now()};
   S.logs[name].push(row);save();$("#f-val").value="";
@@ -902,6 +903,7 @@ function renderLog(){
     if(sp==="Challenge"&&val<=0)return toast(t("t.needBonus"));
     const patch={date:$("#e-date").value,sport:sp,
       km:sp==="Walk/Run"?val:0,min:SESSION_SPORTS.includes(sp)?val:0,
+      session:SESSION_SPORTS.includes(sp)?1:0,
       bonus:sp==="Challenge"?val:0,proof:$("#e-proof").value};
     Object.assign(S.logs[name][i],patch);save();EDITING=null;renderAll();toast(t("t.updated"));
     await push({action:"update",id,patch});}));
