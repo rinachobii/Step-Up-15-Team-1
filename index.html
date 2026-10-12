@@ -12,7 +12,7 @@
 @font-face{font-family:Metropolis;src:url(fonts/Metropolis-ExtraBold.woff2) format('woff2'),url(Metropolis-ExtraBold.woff2) format('woff2');font-weight:800;font-display:swap}
 @font-face{font-family:Metropolis;src:url(fonts/Metropolis-Black.woff2) format('woff2'),url(Metropolis-Black.woff2) format('woff2');font-weight:900;font-display:swap}
 :root{
-  --blue:#0b5ed7; --black:#17181c; --red:#e0144c; --yellow:#f5a623; --green:#00a05a;
+  --blue:#0b5ed7; --black:#17181c; --red:#e0144c; --yellow:#f5a623; --green:#00a05a; --teal:#0097a7;
   --ink:#17181c; --muted:#767d8c; --line:#e8ecf3; --bg:#f6f8fc; --card:#fff;
   --r:20px; --sh:0 2px 4px rgba(20,30,60,.04),0 12px 30px rgba(20,30,60,.07);
 }
@@ -154,6 +154,7 @@ main{max-width:1120px;margin:0 auto;padding:22px 16px 90px}
 .sp[data-c=blue].on{background:var(--blue)} .sp[data-c=red].on{background:var(--red)}
 .sp[data-c=yellow].on{background:var(--yellow);color:#4a3000} .sp[data-c=green].on{background:var(--green)}
 .sp[data-c=black].on{background:var(--black)}
+.sp[data-c=teal].on{background:var(--teal)}
 
 /* FORM */
 .frow{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));align-items:end}
@@ -409,7 +410,7 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;padding:0 16px 36px
     <div class="kpi k1"><b id="k-avg">0</b><em data-i18n="kpi.avg"></em></div>
     <div class="kpi k2"><b id="k-pass">0/10</b><em data-i18n="kpi.pass"></em></div>
     <div class="kpi k3"><b id="k-viral">0</b><em data-i18n="kpi.viral"></em></div>
-    <div class="kpi k4"><b id="k-sports">0/4</b><em data-i18n="kpi.sports"></em></div>
+    <div class="kpi k4"><b id="k-sports">0/5</b><em data-i18n="kpi.sports"></em></div>
   </div>
   <div class="sec-h"><h2 data-i18n="track.title"></h2><span data-i18n="track.sub"></span></div>
   <div class="panel" id="prize-track"></div>
@@ -464,10 +465,12 @@ const SPORT_DEF=[
  {n:"Đi bộ/Chạy bộ",k:"sp.run",icon:"🏃",c:"blue"},
  {n:"Cầu lông",k:"sp.bad",icon:"🏸",c:"red"},
  {n:"Bóng đá",k:"sp.foot",icon:"⚽",c:"green"},
- {n:"Pickleball",k:"sp.pick",icon:"🎾",c:"yellow"},
+ {n:"Pickleball",k:"sp.pick",icon:"🏓",c:"yellow"},
+ {n:"Tennis",k:"sp.tennis",icon:"🎾",c:"teal"},
  {n:"Thử thách thêm",k:"sp.bonus",icon:"⭐",c:"black"}];
-const SESSION_SPORTS=["Cầu lông","Bóng đá","Pickleball"];
-const COLORS={blue:"#0b5ed7",red:"#e0144c",yellow:"#f5a623",green:"#00a05a",black:"#17181c"};
+const SESSION_SPORTS=["Cầu lông","Bóng đá","Pickleball","Tennis"];
+const SPORT_COUNT=SPORT_DEF.filter(x=>x.n!=="Thử thách thêm").length;
+const COLORS={blue:"#0b5ed7",red:"#e0144c",yellow:"#f5a623",green:"#00a05a",black:"#17181c",teal:"#0097a7"};
 const RINGC=["blue","black","red","yellow","green"];
 const PLAT={Facebook:"🔵",Instagram:"🟣",TikTok:"⚫",YouTube:"🔴",LinkedIn:"🔷",Threads:"⚪",X:"✖️",Pinterest:"📌",Behance:"🅱️",Zalo:"🔹"};
 const WR=[[500,500],[400,400],[300,300],[200,200],[100,100]];
@@ -507,9 +510,9 @@ vi:{
  "group.add":"Thêm buổi chung","group.list":"Danh sách buổi tập chung","group.sessions":"buổi",
  "group.people":"thành viên","group.empty":"Chưa ghi nhận buổi tập chung nào.",
  "group.needMembers":"Nhập số thành viên tham gia","group.other":"Hoạt động khác",save:"Lưu",
- "sp.run":"Đi bộ / Chạy","sp.bad":"Cầu lông","sp.foot":"Bóng đá","sp.pick":"Pickleball","sp.bonus":"Thử thách",
+ "sp.run":"Đi bộ / Chạy","sp.bad":"Cầu lông","sp.foot":"Bóng đá","sp.pick":"Pickleball","sp.tennis":"Tennis","sp.bonus":"Thử thách",
  "rules.runSub":"Tính theo tổng KM · tối thiểu 1 km mỗi buổi",
- "rules.sessionSports":"Cầu lông · Bóng đá · Pickleball",
+ "rules.sessionSports":"Cầu lông · Bóng đá · Pickleball · Tennis",
  "rules.sesSub":"Tính theo số buổi · tối thiểu 30 phút mỗi buổi",
  "u.km":"km","u.ses":"buổi","u.pt":"đ","u.min":"phút","u.pts":"điểm",
  "rules.title":"Luật chơi",
@@ -585,9 +588,9 @@ en:{
  "group.add":"Add session","group.list":"Group session records","group.sessions":"sessions",
  "group.people":"members","group.empty":"No group sessions logged yet.",
  "group.needMembers":"Enter how many members joined","group.other":"Other activity",save:"Save",
- "sp.run":"Walk / Run","sp.bad":"Badminton","sp.foot":"Football","sp.pick":"Pickleball","sp.bonus":"Challenge",
+ "sp.run":"Walk / Run","sp.bad":"Badminton","sp.foot":"Football","sp.pick":"Pickleball","sp.tennis":"Tennis","sp.bonus":"Challenge",
  "rules.runSub":"Based on total KM · min 1 km per session",
- "rules.sessionSports":"Badminton · Football · Pickleball",
+ "rules.sessionSports":"Badminton · Football · Pickleball · Tennis",
  "rules.sesSub":"Based on session count · min 30 minutes each",
  "u.km":"km","u.ses":"sessions","u.pt":"pts","u.min":"min","u.pts":"pts",
  "rules.title":"Rules",
@@ -746,7 +749,7 @@ function applyLang(){
   $$(".langsw button").forEach(b=>b.classList.toggle("on",b.dataset.lang===LANG));
   $$("[data-i18n]").forEach(el=>el.textContent=t(el.dataset.i18n));
   const gv=$("#g-act").value;
-  $("#g-act").innerHTML=SPORT_DEF.slice(0,4).map(x=>`<option value="${esc(x.n)}">${x.icon} ${esc(t(x.k))}</option>`).join("")
+  $("#g-act").innerHTML=SPORT_DEF.filter(x=>x.n!=="Thử thách thêm").map(x=>`<option value="${esc(x.n)}">${x.icon} ${esc(t(x.k))}</option>`).join("")
     +`<option value="other">👥 ${esc(t("group.other"))}</option>`;
   $("#g-act").value=gv||SPORT_DEF[0].n;
   $("#sports").innerHTML=SPORT_DEF.map(s=>
@@ -914,7 +917,7 @@ function renderTeam(){
   $("#k-avg").textContent=nf(Math.round(total/MEMBERS.length));
   $("#k-pass").textContent=pass+"/10";
   $("#k-viral").textContent=nf(S.posts.length);
-  $("#k-sports").textContent=sp.size+"/4";
+  $("#k-sports").textContent=sp.size+"/"+SPORT_COUNT;
 
   const ranked=[...all].sort((a,b)=>b.total-a.total);
   const me=$("#sel-member").value;
@@ -961,7 +964,7 @@ function renderTeam(){
   const g=groupStats();
   const figs=[nf(Math.round(total/MEMBERS.length))+" "+U[0],
     g.n?g.avg+" "+U[1]:t("track.empty"),
-    sp.size+"/4 "+U[2],pass+"/10 "+U[3],
+    sp.size+"/"+SPORT_COUNT+" "+U[2],pass+"/10 "+U[3],
     nf(S.posts.length)+" "+U[4]+(contributors.size?` · ${contributors.size}/10`:"")];
   $("#prize-track").innerHTML=t("prizes").slice(0,5).map((p,i)=>
     `<div class="prize"><span class="m ${bgc[i]}">${amt[i]}</span>
