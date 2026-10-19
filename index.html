@@ -321,6 +321,7 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;padding:0 16px 36px
   <div class="mhero">
     <div class="pick"><label data-i18n="youAre"></label><select id="sel-member"></select></div>
     <div class="mstat">
+      <div><b id="m-live">0</b><span data-i18n="st.live"></span></div>
       <div><b id="m-total">0</b><span data-i18n="st.total"></span></div>
       <div><b id="m-left">300</b><span data-i18n="st.left"></span></div>
       <div><b id="m-rank">—</b><span data-i18n="st.rank"></span></div>
@@ -487,7 +488,8 @@ vi:{
  tagline:"Luyện tập mỗi ngày · Tích điểm lên Level · Chạm mốc 300 điểm",
  "tab.me":"Bảng điểm của tôi","tab.viral":"Viral","tab.rules":"Cách tính điểm",
  "teamsec.title":"Chỉ số cả team","teamsec.sub":"Dùng để xét các giải team",
- youAre:"Bạn là","st.total":"TỔNG ĐIỂM","st.left":"CÒN THIẾU","st.rank":"HẠNG TEAM",
+ youAre:"Bạn là","st.live":"ĐIỂM TẠM TÍNH","st.total":"ĐIỂM ĐÃ CHỐT","st.left":"CÒN THIẾU","st.rank":"HẠNG TEAM",
+ "lb.locked":"đã chốt",
  "entry.title":"Hôm nay bạn tập gì?","entry.sub":"Chọn môn, nhập số liệu, xong.",
  "f.date":"Ngày","f.sport":"Môn thể thao","f.proof":"Minh chứng đã nộp",
  "f.proof.none":"Chưa nộp","f.proof.drive":"📁 Đã up lên Drive","f.proof.zalo":"💬 Đã gửi group Zalo",
@@ -502,9 +504,9 @@ vi:{
  "log.drive":"đã up Drive","log.zalo":"đã gửi Zalo","log.noproof":"chưa nộp minh chứng",
  "st.verified":"✅ Đã xác minh","st.pending":"⏳ Chưa xác minh",
  "ed.title":"Sửa bản ghi","ed.save":"Lưu thay đổi","ed.cancel":"Hủy",
- "pod.title":"Top 3 dẫn đầu",
+ "pod.title":"Top 3 dẫn đầu · điểm tạm tính",
  "kpi.avg":"Điểm trung bình team","kpi.pass":"Thành viên đạt 300đ","kpi.viral":"Bài đăng mạng xã hội","kpi.sports":"Môn thể thao đã tham gia",
- "rank.title":"Bảng xếp hạng đầy đủ","rank.sub":"Chạm vào một người để xem sổ tập",
+ "rank.title":"Bảng xếp hạng đầy đủ","rank.sub":"Xếp theo điểm tạm tính · 1 km = 1đ · 1 buổi = 10đ",
  "track.title":"Đường đua giải thưởng","track.sub":"Chỉ nhận 01 giải cao nhất",
  "track.now":"Chỉ số hiện tại","track.empty":"chưa có",
  "group.title":"Buổi tập chung của team","group.sub":"Ghi nhận các buổi cả team cùng tập — dùng để xét giải Best Team Engagement.",
@@ -565,7 +567,8 @@ en:{
  tagline:"Train every day · Level up · Reach 300 points",
  "tab.me":"My log","tab.viral":"Viral","tab.rules":"Scoring",
  "teamsec.title":"Team figures","teamsec.sub":"Used for the team prizes",
- youAre:"You are","st.total":"TOTAL POINTS","st.left":"POINTS TO GO","st.rank":"TEAM RANK",
+ youAre:"You are","st.live":"LIVE SCORE","st.total":"LOCKED SCORE","st.left":"POINTS TO GO","st.rank":"TEAM RANK",
+ "lb.locked":"locked",
  "entry.title":"What did you train today?","entry.sub":"Pick a sport, enter the number, done.",
  "f.date":"Date","f.sport":"Sport","f.proof":"Proof submitted",
  "f.proof.none":"Not yet","f.proof.drive":"📁 Uploaded to Drive","f.proof.zalo":"💬 Sent to Zalo group",
@@ -580,9 +583,9 @@ en:{
  "log.drive":"on Drive","log.zalo":"in Zalo group","log.noproof":"no proof yet",
  "st.verified":"✅ Verified","st.pending":"⏳ Unverified",
  "ed.title":"Edit record","ed.save":"Save changes","ed.cancel":"Cancel",
- "pod.title":"Top 3 leaders",
+ "pod.title":"Top 3 leaders · live score",
  "kpi.avg":"Team average points","kpi.pass":"Members at 300 pts","kpi.viral":"Social media posts","kpi.sports":"Sports played",
- "rank.title":"Full leaderboard","rank.sub":"Tap a member to open their log",
+ "rank.title":"Full leaderboard","rank.sub":"Ranked by live score · 1 km = 1 pt · 1 session = 10 pts",
  "track.title":"Prize race","track.sub":"Only the highest prize is awarded",
  "track.now":"Current figure","track.empty":"no data",
  "group.title":"Team group sessions","group.sub":"Log the sessions the team trained together — used for the Best Team Engagement prize.",
@@ -708,8 +711,10 @@ function calc(name){
     if(r.proof&&r.proof!=="none")sourced++;
     if(r.status==="verified")verified++;});
   const a=lvOf(km,WR),b=lvOf(ses,BFP);
+  // live score: tỉ lệ tuyến tính của thang chính thức (100 km = 100đ · 13 buổi = 130đ)
+  const live=Math.round(km*1+ses*10+bonus);
   return {km,ses,bonus,sourced,verified,sports:used,lvA:a.lv,ptsA:a.pts,lvB:b.lv,ptsB:b.pts,
-    total:a.pts+b.pts+bonus,rows:rows.length};
+    total:a.pts+b.pts+bonus,live,rows:rows.length};
 }
 
 /* ===== CLOUD ===== */
@@ -826,13 +831,14 @@ $("#btn-add").addEventListener("click",async()=>{
 /* ===== ME ===== */
 function renderMe(){
   const name=$("#sel-member").value,c=calc(name);
-  const ranked=MEMBERS.map(m=>({m,tt:calc(m).total})).sort((a,b)=>b.tt-a.tt);
+  const ranked=MEMBERS.map(m=>({m,tt:calc(m).live})).sort((a,b)=>b.tt-a.tt);
+  $("#m-live").textContent=nf(c.live);
   $("#m-total").textContent=nf(c.total);
-  $("#m-left").textContent=c.total>=GOAL?"✓":nf(GOAL-c.total);
+  $("#m-left").textContent=c.live>=GOAL?"✓":nf(GOAL-c.live);
   $("#m-rank").textContent="#"+(ranked.findIndex(x=>x.m===name)+1);
   const nA=nextStep(c.km,WR),nB=nextStep(c.ses,BFP);
   const bars=(lv,cl)=>`<div class="lvbar ${cl}">${[1,2,3,4,5].map(i=>`<i class="${i<=lv?'on':''}"></i>`).join("")}</div>`;
-  const pct=Math.min(100,Math.round(c.total/GOAL*100));
+  const pct=Math.min(100,Math.round(c.live/GOAL*100));
   const nxt=(n,key)=>n?t(key).replace("{n}",nf(n.need)).replace("{l}",n.lv):t("nx.max");
   $("#m-progress").innerHTML=`
    <div class="pbox"><div class="t"><b class="c-blue">${c.ptsA}${t("u.pt")}</b><span>🏃 ${nf(c.km)} ${t("u.km")}</span></div>
@@ -841,10 +847,10 @@ function renderMe(){
      ${bars(c.lvB,"c-red")}<small>${nxt(nB,"nx.ses")}</small></div>
    <div class="pbox"><div class="t"><b class="c-black">${c.bonus}${t("u.pt")}</b><span>⭐ ${esc(t("sp.bonus"))}</span></div>
      <div class="lvbar c-black"><i class="${c.bonus>0?'on':''}"></i></div><small>${esc(t("p.bonusNote"))}</small></div>
-   <div class="pbox" style="background:${c.total>=GOAL?'#e4f7ee':'#fff3df'};border-color:transparent">
-     <div class="t"><b class="${c.total>=GOAL?'c-green':'c-yellow'}">${nf(c.total)}${t("u.pt")}</b><span>${pct}% ${esc(t("goal"))}</span></div>
-     <div class="lvbar ${c.total>=GOAL?'c-green':'c-yellow'}"><i class="on" style="flex:none;width:${pct}%"></i></div>
-     <small>${c.total>=GOAL?esc(t("reach")):`${esc(t("left1"))} ${nf(GOAL-c.total)} ${esc(t("left2"))}`}</small></div>`;
+   <div class="pbox" style="background:${c.live>=GOAL?'#e4f7ee':'#fff3df'};border-color:transparent">
+     <div class="t"><b class="${c.live>=GOAL?'c-green':'c-yellow'}">${nf(c.live)}${t("u.pt")}</b><span>${pct}% ${esc(t("goal"))}</span></div>
+     <div class="lvbar ${c.live>=GOAL?'c-green':'c-yellow'}"><i class="on" style="flex:none;width:${pct}%"></i></div>
+     <small>${c.live>=GOAL?esc(t("reach")):`${esc(t("left1"))} ${nf(GOAL-c.live)} ${esc(t("left2"))}`} · ${esc(t("lb.locked"))} ${nf(c.total)}${t("u.pt")}</small></div>`;
   renderLog();
 }
 
@@ -926,31 +932,31 @@ function renderTeam(){
   $("#k-viral").textContent=nf(S.posts.length);
   $("#k-sports").textContent=sp.size+"/"+SPORT_COUNT;
 
-  const ranked=[...all].sort((a,b)=>b.total-a.total);
+  const ranked=[...all].sort((a,b)=>b.live-a.live||b.total-a.total);
   const me=$("#sel-member").value;
   const top=ranked.slice(0,3),rest=ranked.slice(3);
   const podOrder=[top[1],top[0],top[2]],podCls=["pod2","pod1","pod3"],podNo=["2","1","3"];
   $("#podium").innerHTML=podOrder.map((a,i)=>{
     if(!a)return"";
-    const pct=Math.min(100,Math.round(a.total/GOAL*100));
+    const pct=Math.min(100,Math.round(a.live/GOAL*100));
     return `<button class="pod ${podCls[i]}" data-m="${esc(a.name)}">
       ${podCls[i]==="pod1"?'<div class="crown">👑</div>':""}
       <span class="no">${podNo[i]}</span>
       <div class="av">${esc(initials(a.name))}</div>
       <div class="nm">${esc(a.name)}</div>
-      <div class="sc">${nf(a.total)}</div>
-      <div class="su">${pct}% ${esc(t("goal"))}</div>
+      <div class="sc">${nf(a.live)}</div>
+      <div class="su">${pct}% ${esc(t("goal"))} · ${esc(t("lb.locked"))} ${nf(a.total)}</div>
       <div style="position:relative;margin-top:8px"><span class="pill">${a.km?"🏃 "+nf(a.km)+" "+t("u.km"):a.ses?"🏸 "+a.ses+" "+t("u.ses"):"—"}</span></div>
     </button>`;}).join("");
 
   $("#ranklist").innerHTML=rest.map((a,i)=>{
-    const col=COLORS[RINGC[a.idx%5]],pct=Math.min(100,a.total/GOAL*100);
+    const col=COLORS[RINGC[a.idx%5]],pct=Math.min(100,a.live/GOAL*100);
     return `<button class="lbc${a.name===me?" me":""}" data-m="${esc(a.name)}" title="${esc(a.name)}">
       <span class="lbtop"><span class="lbrank">${i+4}</span>
         <span class="av2" style="background:${col}">${esc(initials(a.name))}</span></span>
       <span class="lbname">${esc(shortName(a.name))}</span>
-      <span class="lbsc"><b style="color:${a.total>=GOAL?COLORS.green:"var(--ink)"}">${nf(a.total)}</b><span>/ 300</span></span>
-      <span class="rbar"><i style="width:${pct}%;background:${a.total>=GOAL?COLORS.green:col}"></i></span>
+      <span class="lbsc"><b style="color:${a.live>=GOAL?COLORS.green:"var(--ink)"}">${nf(a.live)}</b><span>/ 300</span></span>
+      <span class="rbar"><i style="width:${pct}%;background:${a.live>=GOAL?COLORS.green:col}"></i></span>
     </button>`;}).join("");
   $$("[data-m]").forEach(el=>el.addEventListener("click",()=>{
     $("#sel-member").value=el.dataset.m;renderAll();window.scrollTo({top:0,behavior:"smooth"});}));

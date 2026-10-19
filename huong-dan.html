@@ -153,7 +153,10 @@ const BFP=[[78,780],[65,650],[52,520],[26,260],[13,130]];
 const KEY="stepup15.v1",GOAL=300;
 
 const GS_CODE=`const SHEET='Log', POSTS='Posts', GROUP='Group', CFG='Config';
-const COLS=['id','member','date','sport','km','min','bonus','proof','status','createdAt'];
+const COLS=['id','member','date','sport','km','min','session','bonus','proof','status','createdAt'];
+// môn tính theo buổi — mỗi bản ghi = 1 session
+const SESSION_SPORTS=['Badminton','Football','Pickleball','Tennis','Cầu lông','Bóng đá'];
+function isSession(sp){return SESSION_SPORTS.indexOf(String(sp||'').trim())>-1?1:0;}
 const PCOLS=['id','publisher','date','platform','sourceFrom','url','createdAt'];
 const GCOLS=['id','date','activity','members','createdAt'];
 
@@ -162,7 +165,22 @@ function tab(name,cols){
   var s=ss().getSheetByName(name);
   if(!s){s=ss().insertSheet(name);s.appendRow(cols);s.setFrozenRows(1);}
   return s;}
-function sheet(){return tab(SHEET,COLS);}
+function sheet(){
+  var s=tab(SHEET,COLS);
+  var hdr=s.getRange(1,1,1,s.getLastColumn()).getValues()[0];
+  if(hdr.indexOf('session')===-1){
+    var mi=hdr.indexOf('min');
+    if(mi>-1){
+      s.insertColumnAfter(mi+1);
+      s.getRange(1,mi+2).setValue('session');
+      var last=s.getLastRow();
+      if(last>1){
+        var sp=s.getRange(2,4,last-1,1).getValues();
+        s.getRange(2,mi+2,last-1,1).setValues(sp.map(function(r){return [isSession(r[0])];}));
+      }
+    }
+  }
+  return s;}
 function posts(){return tab(POSTS,PCOLS);}
 function group(){return tab(GROUP,GCOLS);}
 function cfg(){return tab(CFG,['key','value']);}
@@ -182,8 +200,8 @@ function readAll(){
   for(var i=1;i<v.length;i++){
     if(!v[i][0])continue;
     rows.push({id:String(v[i][0]),member:v[i][1],date:fmt(v[i][2]),sport:v[i][3],
-      km:Number(v[i][4]||0),min:Number(v[i][5]||0),bonus:Number(v[i][6]||0),
-      proof:v[i][7]||'none',status:v[i][8]||'pending'});}
+      km:Number(v[i][4]||0),min:Number(v[i][5]||0),session:Number(v[i][6]||0),
+      bonus:Number(v[i][7]||0),proof:v[i][8]||'none',status:v[i][9]||'pending'});}
   var p=posts().getDataRange().getValues(),plist=[];
   for(var k=1;k<p.length;k++){
     if(!p[k][0])continue;
@@ -212,14 +230,18 @@ function doPost(e){
     var b=JSON.parse(e.postData.contents);
     if(b.action==='add'){
       var r=b.row;
-      sheet().appendRow([r.id,r.member,r.date,r.sport,r.km||'',r.min||'',r.bonus||'',
-        r.proof||'none',r.status||'pending',new Date()]);
+      sheet().appendRow([r.id,r.member,r.date,r.sport,r.km||'',r.min||'',isSession(r.sport),
+        r.bonus||'',r.proof||'none',r.status||'pending',new Date()]);
     }
     else if(b.action==='update'){
       var s=sheet(),n=findRow(s,b.id);
-      if(n){Object.keys(b.patch||{}).forEach(function(k){
-        var c=COLS.indexOf(k);
-        if(c>0)s.getRange(n,c+1).setValue(b.patch[k]);});}
+      if(n){
+        Object.keys(b.patch||{}).forEach(function(k){
+          var c=COLS.indexOf(k);
+          if(c>0)s.getRange(n,c+1).setValue(b.patch[k]);});
+        if(b.patch&&b.patch.sport!==undefined)
+          s.getRange(n,COLS.indexOf('session')+1).setValue(isSession(b.patch.sport));
+      }
     }
     else if(b.action==='delete'){
       var s2=sheet(),n2=findRow(s2,b.id);if(n2)s2.deleteRow(n2);
@@ -250,7 +272,10 @@ function doPost(e){
   finally{lock.releaseLock();}}`;
 
 const ALT_CODE=`const SHEET='Log', POSTS='Posts', GROUP='Group', CFG='Config';
-const COLS=['id','member','date','sport','km','min','bonus','proof','status','createdAt'];
+const COLS=['id','member','date','sport','km','min','session','bonus','proof','status','createdAt'];
+// môn tính theo buổi — mỗi bản ghi = 1 session
+const SESSION_SPORTS=['Badminton','Football','Pickleball','Tennis','Cầu lông','Bóng đá'];
+function isSession(sp){return SESSION_SPORTS.indexOf(String(sp||'').trim())>-1?1:0;}
 const PCOLS=['id','publisher','date','platform','sourceFrom','url','createdAt'];
 const GCOLS=['id','date','activity','members','createdAt'];
 
@@ -263,7 +288,22 @@ function tab(name,cols){
   var s=ss().getSheetByName(name);
   if(!s){s=ss().insertSheet(name);s.appendRow(cols);s.setFrozenRows(1);}
   return s;}
-function sheet(){return tab(SHEET,COLS);}
+function sheet(){
+  var s=tab(SHEET,COLS);
+  var hdr=s.getRange(1,1,1,s.getLastColumn()).getValues()[0];
+  if(hdr.indexOf('session')===-1){
+    var mi=hdr.indexOf('min');
+    if(mi>-1){
+      s.insertColumnAfter(mi+1);
+      s.getRange(1,mi+2).setValue('session');
+      var last=s.getLastRow();
+      if(last>1){
+        var sp=s.getRange(2,4,last-1,1).getValues();
+        s.getRange(2,mi+2,last-1,1).setValues(sp.map(function(r){return [isSession(r[0])];}));
+      }
+    }
+  }
+  return s;}
 function posts(){return tab(POSTS,PCOLS);}
 function group(){return tab(GROUP,GCOLS);}
 function cfg(){return tab(CFG,['key','value']);}
@@ -283,8 +323,8 @@ function readAll(){
   for(var i=1;i<v.length;i++){
     if(!v[i][0])continue;
     rows.push({id:String(v[i][0]),member:v[i][1],date:fmt(v[i][2]),sport:v[i][3],
-      km:Number(v[i][4]||0),min:Number(v[i][5]||0),bonus:Number(v[i][6]||0),
-      proof:v[i][7]||'none',status:v[i][8]||'pending'});}
+      km:Number(v[i][4]||0),min:Number(v[i][5]||0),session:Number(v[i][6]||0),
+      bonus:Number(v[i][7]||0),proof:v[i][8]||'none',status:v[i][9]||'pending'});}
   var p=posts().getDataRange().getValues(),plist=[];
   for(var k=1;k<p.length;k++){
     if(!p[k][0])continue;
@@ -313,14 +353,18 @@ function doPost(e){
     var b=JSON.parse(e.postData.contents);
     if(b.action==='add'){
       var r=b.row;
-      sheet().appendRow([r.id,r.member,r.date,r.sport,r.km||'',r.min||'',r.bonus||'',
-        r.proof||'none',r.status||'pending',new Date()]);
+      sheet().appendRow([r.id,r.member,r.date,r.sport,r.km||'',r.min||'',isSession(r.sport),
+        r.bonus||'',r.proof||'none',r.status||'pending',new Date()]);
     }
     else if(b.action==='update'){
       var s=sheet(),n=findRow(s,b.id);
-      if(n){Object.keys(b.patch||{}).forEach(function(k){
-        var c=COLS.indexOf(k);
-        if(c>0)s.getRange(n,c+1).setValue(b.patch[k]);});}
+      if(n){
+        Object.keys(b.patch||{}).forEach(function(k){
+          var c=COLS.indexOf(k);
+          if(c>0)s.getRange(n,c+1).setValue(b.patch[k]);});
+        if(b.patch&&b.patch.sport!==undefined)
+          s.getRange(n,COLS.indexOf('session')+1).setValue(isSession(b.patch.sport));
+      }
     }
     else if(b.action==='delete'){
       var s2=sheet(),n2=findRow(s2,b.id);if(n2)s2.deleteRow(n2);
@@ -365,7 +409,7 @@ const I18N={vi:{
  "where.note":"GitHub Pages chỉ host file tĩnh, không có database. Muốn cả team nhập chung một chỗ thì bắt buộc làm bước Google Sheets bên dưới.",
  "app.t":"Cấu trúc web của team","app.s":"index.html gồm 3 tab, mặc định hiển thị tiếng Anh.",
  "app.c1":"Tab","app.c2":"Nội dung",
- appRows:[["My log","Chọn tên → Top 3 podium → bảng xếp hạng → ghi nhận buổi tập → tiến độ → lịch sử (sửa/xóa từng bản ghi)."],
+ appRows:[["My log","Chọn tên → Top 3 podium → bảng xếp hạng (theo điểm tạm tính: 1 km = 1đ · 1 buổi = 10đ) → ghi nhận buổi tập → tiến độ → lịch sử (sửa/xóa từng bản ghi)."],
           ["Viral","Luồng 3 bước, link kho ảnh chung, form ghi nhận bài đăng MXH (Mai Phương · Phương Thảo · Ánh Đào), danh sách bài đã đăng."],
           ["Scoring","Chỉ số team, đường đua giải thưởng, buổi tập chung (ngày · hoạt động · số người), thang điểm, luật chơi, giải thưởng."]],
  "app.note":"Minh chứng: mỗi người chọn Chưa nộp / 📁 Đã up lên Drive / 💬 Đã gửi group Zalo — chọn Drive hoặc Zalo thì bản ghi tự chuyển sang Đã xác minh. Không có bước duyệt trung gian, mọi bản ghi đều được tính điểm. Chỉ số Best Team Engagement tính tự động từ bảng buổi tập chung.",
@@ -400,7 +444,7 @@ const I18N={vi:{
  "sheet.t":"Sheet sẽ tự sinh 4 tab",
  "sheet.s":"HR có thể sửa trực tiếp trong Sheet; bấm Tải lại trên web để cập nhật.",
  "sheet.c1":"Tab","sheet.c2":"Cột",
- sheetRows:[["Log","id · member · date · sport · km · min · bonus · proof · status · createdAt — giá trị sport luôn bằng tiếng Anh: Walk/Run · Badminton · Football · Pickleball · Tennis · Challenge"],
+ sheetRows:[["Log","id · member · date · sport · km · min · session · bonus · proof · status · createdAt — giá trị sport luôn bằng tiếng Anh: Walk/Run · Badminton · Football · Pickleball · Tennis · Challenge"],
             ["Posts","id · publisher · date · platform · sourceFrom · url · createdAt"],
             ["Group","id · date · activity · members · createdAt"],
             ["Config","key · value (folder)"]],
@@ -433,7 +477,7 @@ const I18N={vi:{
  "where.note":"GitHub Pages only serves static files — there is no database. A shared data store requires the Google Sheets step below.",
  "app.t":"How the team app is structured","app.s":"index.html has 3 tabs and opens in English by default.",
  "app.c1":"Tab","app.c2":"Contents",
- appRows:[["My log","Pick your name → top 3 podium → leaderboard → log a session → progress → history (edit/delete each record)."],
+ appRows:[["My log","Pick your name → top 3 podium → leaderboard (by live score: 1 km = 1 pt · 1 session = 10 pts) → log a session → progress → history (edit/delete each record)."],
           ["Viral","The 3-step flow, shared folder link, form to log social posts (Mai Phương · Phương Thảo · Ánh Đào), list of published posts."],
           ["Scoring","Team figures, prize race, group sessions (date · activity · people), scoring ladders, rules, prizes."]],
  "app.note":"Proof: each member picks Not yet / 📁 Uploaded to Drive / 💬 Sent to Zalo group — Drive or Zalo flips the record to Verified. No approval step, and every record counts towards the score. The Best Team Engagement figure is computed from the group-session table.",
@@ -468,7 +512,7 @@ const I18N={vi:{
  "sheet.t":"The Sheet auto-creates 4 tabs",
  "sheet.s":"HR can edit the Sheet directly; hit Refresh in the app to pull changes.",
  "sheet.c1":"Tab","sheet.c2":"Columns",
- sheetRows:[["Log","id · member · date · sport · km · min · bonus · proof · status · createdAt"],
+ sheetRows:[["Log","id · member · date · sport · km · min · session · bonus · proof · status · createdAt"],
             ["Posts","id · publisher · date · platform · sourceFrom · url · createdAt"],
             ["Group","id · date · activity · members · createdAt"],
             ["Config","key · value (folder)"]],
