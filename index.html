@@ -55,6 +55,7 @@ main{max-width:1120px;margin:0 auto;padding:22px 16px 90px}
 .syncbar .dotx{width:8px;height:8px;border-radius:50%;background:#c3cad8}
 .syncbar.cloud .dotx{background:var(--green);box-shadow:0 0 0 4px rgba(0,160,90,.15)}
 .syncbar.err .dotx{background:var(--red)}
+.syncbar.err{color:var(--red);font-weight:700}
 .syncbar button{border:0;background:#eef1f7;color:var(--ink);font-size:12px;font-weight:700;border-radius:999px;padding:5px 12px;cursor:pointer}
 
 /* KPI */
@@ -420,12 +421,13 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;padding:0 16px 36px
     <div class="kpis" style="margin-bottom:18px">
       <div class="kpi k2"><b id="g-avg">0</b><em data-i18n="group.kpiAvg"></em></div>
       <div class="kpi k1"><b id="g-five">0</b><em data-i18n="group.kpi5"></em></div>
+      <div class="kpi k3"><b id="g-two">0</b><em data-i18n="group.kpi2"></em></div>
       <div class="kpi k4"><b id="g-count">0</b><em data-i18n="group.kpiCount"></em></div>
     </div>
     <div class="frow">
       <div class="fld"><label data-i18n="group.date"></label><input type="date" id="g-date"></div>
       <div class="fld"><label data-i18n="group.act"></label><select id="g-act"></select></div>
-      <div class="fld"><label data-i18n="group.members"></label><input type="number" id="g-members" min="1" step="1" placeholder="6"></div>
+      <div class="fld"><label data-i18n="group.members"></label><input type="number" id="g-members" min="2" step="1" placeholder="2"></div>
       <button class="btn btn-main" id="btn-group" data-i18n="group.add"></button>
     </div>
     <div class="sec-h" style="margin:22px 0 11px"><h2 style="font-size:15px" data-i18n="group.list"></h2><span id="g-listcount"></span></div>
@@ -510,23 +512,28 @@ vi:{
  "track.title":"Đường đua giải thưởng","track.sub":"Chỉ nhận 01 giải cao nhất",
  "track.now":"Chỉ số hiện tại","track.empty":"chưa có",
  "group.title":"Buổi tập chung của team","group.sub":"Ghi nhận các buổi cả team cùng tập — dùng để xét giải Best Team Engagement.",
- "group.kpiAvg":"TB thành viên / buổi","group.kpi5":"Buổi có ≥ 5 người","group.kpiCount":"Tổng số buổi chung",
+ "group.kpiAvg":"TB thành viên / buổi","group.kpi2":"Buổi chung (≥ 2 người)","group.kpi5":"Buổi có ≥ 5 người (tiêu chí phụ)","group.kpiCount":"Tổng số buổi chung",
  "group.date":"Ngày","group.act":"Loại hoạt động","group.members":"Số thành viên tham gia",
  "group.add":"Thêm buổi chung","group.list":"Danh sách buổi tập chung","group.sessions":"buổi",
  "group.people":"thành viên","group.empty":"Chưa ghi nhận buổi tập chung nào.",
- "group.needMembers":"Nhập số thành viên tham gia","group.other":"Hoạt động khác",save:"Lưu",
+ "group.needMembers":"Buổi chung cần ít nhất 2 người",
+ "hint.perSport":"Mỗi môn tính Level riêng — 13 buổi cùng một môn mới lên Lv1","group.other":"Hoạt động khác",save:"Lưu",
  "sp.run":"Đi bộ / Chạy","sp.bad":"Cầu lông","sp.foot":"Bóng đá","sp.pick":"Pickleball","sp.tennis":"Tennis","sp.bonus":"Thử thách",
  "rules.runSub":"Tính theo tổng KM · tối thiểu 1 km mỗi buổi",
  "rules.sessionSports":"Cầu lông · Bóng đá · Pickleball · Tennis",
- "rules.sesSub":"Tính theo số buổi · tối thiểu 30 phút mỗi buổi",
+ "rules.sesSub":"Mỗi môn tính Level riêng · tối thiểu 30 phút mỗi buổi · không cộng dồn giữa các môn",
  "u.km":"km","u.ses":"buổi","u.pt":"đ","u.min":"phút","u.pts":"điểm",
  "rules.title":"Luật chơi",
  rules:[["🎯","Đủ Level mới có điểm","Không tính lẻ từng km hay từng buổi."],
-        ["🔀","Chơi nhiều môn được cộng dồn","Kết hợp thoải mái, điểm các môn cộng lại."],
+        ["🚫","Không cộng dồn giữa các môn","Lv1 cầu lông cần đủ 13 buổi cầu lông. 5 cầu lông + 5 pickleball + 3 bóng đá = chưa có điểm. Điểm từng môn tính riêng rồi cộng lại."],
+        ["🏁","Tối đa Lv5 mỗi môn","Vượt Lv5 vẫn tập được nhưng không cộng thêm điểm — chỉ dùng làm tiêu chí phụ khi hai bên bằng điểm."],
+        ["👥","Hoạt động nhóm từ 2 người","Chụp đủ thành viên; ai có mặt thì tự lưu ảnh về folder cá nhân để tính điểm cá nhân nữa."],
         ["🌙","Ngoài giờ, ngoài công ty","Chỉ tính buổi tập ngoài giờ làm và ngoài khu vực làm việc."],
         ["🤝","Chưa đủ 300đ vẫn được xét giải team","Team chưa đủ 10 người vẫn tham gia bình thường."]],
  "proof.title":"Minh chứng & tự xác minh",
- proof:[["📸","Chụp màn hình có ngày & giờ","Check in — Check out — Record on apps."],
+ proof:[["📸","Đi bộ/chạy bộ: ảnh đủ 4 thông tin","Tên · quãng đường · số km · ngày tập. Máy chạy bộ thì chụp màn hình máy có timemark. Thiếu thì bổ sung thêm ảnh."],
+        ["🏸","Các môn theo buổi: check in & check out","Có ngày giờ, người tập, địa điểm. Có đồng hồ thông minh thì gửi kèm càng tốt."],
+        ["🏡","Chơi gần nhà vẫn hợp lệ","Sân ngoài trời/công viên/sân vườn đều được, miễn là buổi chơi hợp lệ: có người chơi cùng, có vợt đúng chuẩn."],
         ["📁","Up lên folder cá nhân Google Drive","Đặt tên file theo ngày, VD: 05102026"],
         ["✅","Tự bấm xác minh","Mỗi người tự đổi trạng thái bản ghi của mình sang \"Đã xác minh\" — không cần ai duyệt."]],
  example:"<b>Ví dụ:</b> 300 km đi bộ (Lv3 = 300đ) + 13 buổi cầu lông (Lv1 = 130đ) → <b>430 điểm</b>",
@@ -553,6 +560,7 @@ vi:{
  footer:"Step Up 15+ · 05/10/2026 – 31/12/2026",
  "sync.cloud":"Đang lưu trên Google Sheets","sync.local":"Đang lưu trên máy này","sync.err":"Mất kết nối — tạm lưu trên máy",
  "sync.refresh":"Tải lại","sync.loading":"Đang đồng bộ…",
+ "t.syncFail":"⚠️ Chưa lưu được lên Google Sheets — đã khôi phục, vui lòng thử lại",
  "t.saved":"Đã lưu","t.added":"Đã ghi nhận","t.deleted":"Đã xóa","t.updated":"Đã cập nhật",
  "t.pickDate":"Chọn ngày tập","t.minKm":"Cần tối thiểu 1 km","t.minMin":"Buổi tập cần tối thiểu 30 phút",
  "t.needBonus":"Nhập số điểm thử thách","t.blocked":"Trình duyệt đang chặn lưu dữ liệu",
@@ -589,23 +597,28 @@ en:{
  "track.title":"Prize race","track.sub":"Only the highest prize is awarded",
  "track.now":"Current figure","track.empty":"no data",
  "group.title":"Team group sessions","group.sub":"Log the sessions the team trained together — used for the Best Team Engagement prize.",
- "group.kpiAvg":"Avg. members per session","group.kpi5":"Sessions with 5+ people","group.kpiCount":"Group sessions logged",
+ "group.kpiAvg":"Avg. members per session","group.kpi2":"Group sessions (2+ people)","group.kpi5":"Sessions with 5+ people (tie-break)","group.kpiCount":"Group sessions logged",
  "group.date":"Date","group.act":"Activity","group.members":"Members who joined",
  "group.add":"Add session","group.list":"Group session records","group.sessions":"sessions",
  "group.people":"members","group.empty":"No group sessions logged yet.",
- "group.needMembers":"Enter how many members joined","group.other":"Other activity",save:"Save",
+ "group.needMembers":"A group session needs at least 2 people",
+ "hint.perSport":"Each sport levels up on its own — 13 sessions of the same sport for Lv1","group.other":"Other activity",save:"Save",
  "sp.run":"Walk / Run","sp.bad":"Badminton","sp.foot":"Football","sp.pick":"Pickleball","sp.tennis":"Tennis","sp.bonus":"Challenge",
  "rules.runSub":"Based on total KM · min 1 km per session",
  "rules.sessionSports":"Badminton · Football · Pickleball · Tennis",
- "rules.sesSub":"Based on session count · min 30 minutes each",
+ "rules.sesSub":"Each sport levels up separately · min 30 min per session · no mixing across sports",
  "u.km":"km","u.ses":"sessions","u.pt":"pts","u.min":"min","u.pts":"pts",
  "rules.title":"Rules",
  rules:[["🎯","Points come per full Level","Partial km or sessions earn nothing."],
-        ["🔀","Mix sports, points add up","Combine freely — all sports count together."],
+        ["🚫","No mixing across sports","Lv1 badminton needs 13 badminton sessions. 5 badminton + 5 pickleball + 3 football = still zero. Each sport levels up on its own, then the points add up."],
+        ["🏁","Lv5 is the cap per sport","You can keep training past Lv5 but earn no extra points — it only serves as a tie-break."],
+        ["👥","Group activity from 2 people","Photograph everyone present; each participant saves the photo to their own folder so it counts for them too."],
         ["🌙","Off hours, off site","Only sessions outside working hours and outside the workplace count."],
         ["🤝","Under 300 pts still counts for the team","A team with fewer than 10 members can still join."]],
  "proof.title":"Proof & self-verification",
- proof:[["📸","Screenshot with date & time","Check in — Check out — Record on apps."],
+ proof:[["📸","Walk/run: a photo with 4 details","Name · route · distance · date. On a treadmill, photograph the display with a timemark. Add a second photo if one isn't enough."],
+        ["🏸","Session sports: check in & check out","With date, time, person and venue. A smartwatch record is a welcome bonus."],
+        ["🏡","Playing near home is fine","Outdoor courts, parks or a large yard all count, as long as the session is genuine: a real partner and proper rackets."],
         ["📁","Upload to your Google Drive folder","Name the file by date, e.g. 05102026"],
         ["✅","Verify it yourself","Each member switches their own record to \"Verified\" — no approval step needed."]],
  example:"<b>Example:</b> 300 km walking (Lv3 = 300 pts) + 13 badminton sessions (Lv1 = 130 pts) → <b>430 points</b>",
@@ -632,6 +645,7 @@ en:{
  footer:"Step Up 15+ · 05 Oct 2026 – 31 Dec 2026",
  "sync.cloud":"Saving to Google Sheets","sync.local":"Saving on this device","sync.err":"Disconnected — saved locally",
  "sync.refresh":"Refresh","sync.loading":"Syncing…",
+ "t.syncFail":"⚠️ Not saved to Google Sheets — restored, please try again",
  "t.saved":"Saved","t.added":"Logged","t.deleted":"Deleted","t.updated":"Updated",
  "t.pickDate":"Pick a date","t.minKm":"At least 1 km required","t.minMin":"A session needs at least 30 minutes",
  "t.needBonus":"Enter the bonus points","t.blocked":"Browser is blocking local storage",
@@ -659,7 +673,7 @@ MEMBERS.forEach(m=>S.logs[m].forEach(r=>{
   delete r.social; delete r.hr; delete r.link; delete r.source;}));
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast(t("t.blocked"));}};
 const api=()=>(API_URL||"").trim();
-let syncState="local";
+let syncState="local",reSync=null;
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -699,22 +713,39 @@ function lvOf(v,tb){const h=tb.find(r=>v>=r[0]);return h?{lv:tb.length-tb.indexO
 function nextStep(v,tb){const asc=[...tb].reverse(),up=asc.find(r=>r[0]>v);
   return up?{need:up[0]-v,lv:tb.length-tb.findIndex(r=>r[0]===up[0])}:null;}
 const sportDef=n=>SPORT_DEF.find(s=>s.n===normSport(n))||SPORT_DEF[0];
+/* xếp hạng: điểm tạm tính → điểm đã chốt → km → số buổi → tên (A-Z) */
+const rankCmp=(a,b)=>
+  (b.live-a.live)||(b.total-a.total)||(b.km-a.km)||(b.ses-a.ses)||
+  String(a.name).localeCompare(String(b.name),"vi");
+function rankedList(){
+  const list=MEMBERS.map((m,i)=>({name:m,idx:i,...calc(m)})).sort(rankCmp);
+  let r=0,prev=null;
+  list.forEach((x,i)=>{ if(prev===null||x.live!==prev){r=i+1;prev=x.live;} x.rank=r; });
+  return list;
+}
 
 function calc(name){
   const rows=S.logs[name]||[];
   let km=0,ses=0,bonus=0,sourced=0,verified=0;const used=new Set();
+  const bySport={};SESSION_SPORTS.forEach(x=>bySport[x]=0);
   rows.forEach(r=>{
     const sp=normSport(r.sport);
     if(sp==="Walk/Run"){km+=Number(r.km||0);used.add(sp);}
     else if(sp==="Challenge"){bonus+=Number(r.bonus||0);}
-    else if(SESSION_SPORTS.includes(sp)){ses++;used.add(sp);}
+    else if(SESSION_SPORTS.includes(sp)){ses++;bySport[sp]++;used.add(sp);}
     if(r.proof&&r.proof!=="none")sourced++;
     if(r.status==="verified")verified++;});
-  const a=lvOf(km,WR),b=lvOf(ses,BFP);
+  const a=lvOf(km,WR);
+  /* LUẬT: không cộng dồn buổi giữa các môn — mỗi môn tính Level riêng rồi cộng điểm lại */
+  const perSport=SESSION_SPORTS.map(x=>{const l=lvOf(bySport[x],BFP);
+    return {sport:x,ses:bySport[x],lv:l.lv,pts:l.pts};});
+  const ptsB=perSport.reduce((tt,x)=>tt+x.pts,0);
+  const bestLvB=perSport.reduce((m,x)=>Math.max(m,x.lv),0);
   // live score: tỉ lệ tuyến tính của thang chính thức (100 km = 100đ · 13 buổi = 130đ)
   const live=Math.round(km*1+ses*10+bonus);
-  return {km,ses,bonus,sourced,verified,sports:used,lvA:a.lv,ptsA:a.pts,lvB:b.lv,ptsB:b.pts,
-    total:a.pts+b.pts+bonus,live,rows:rows.length};
+  return {km,ses,bonus,sourced,verified,sports:used,bySport,perSport,
+    lvA:a.lv,ptsA:a.pts,lvB:bestLvB,ptsB,
+    total:a.pts+ptsB+bonus,live,rows:rows.length};
 }
 
 /* ===== CLOUD ===== */
@@ -748,8 +779,22 @@ async function pull(silent){
 async function push(payload){
   if(!api())return false;
   try{const r=await fetch(api(),{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
-    const d=await r.json();if(!d.ok)throw 0;applyRemote(d);renderAll();setSync("cloud");return true;}
+    const d=await r.json();if(!d.ok)throw 0;
+    /* Apps Script đôi khi trả snapshot trước khi commit xong: đừng để bản ghi
+       vừa xóa sống lại, và đồng bộ lại sau vài giây cho chắc. */
+    if(payload.action==="delete")d.rows=(d.rows||[]).filter(x=>String(x.id)!==String(payload.id));
+    if(payload.action==="post:delete")d.posts=(d.posts||[]).filter(x=>String(x.id)!==String(payload.id));
+    if(payload.action==="group:delete")d.sessions=(d.sessions||[]).filter(x=>String(x.id)!==String(payload.id));
+    applyRemote(d);renderAll();setSync("cloud");
+    if(String(payload.action||"").includes("delete")){clearTimeout(reSync);reSync=setTimeout(()=>pull(true),2500);}
+    return true;}
   catch(e){setSync("err");return false;}
+}
+async function syncOrRevert(payload){
+  if(!api())return true;
+  const ok=await push(payload);
+  if(!ok){toast(t("t.syncFail"));await pull(true);}
+  return ok;
 }
 $("#btn-sync").addEventListener("click",()=>api()?pull():toast(t("sync.local")));
 
@@ -825,17 +870,17 @@ $("#btn-add").addEventListener("click",async()=>{
     status:proof!=="none"?"verified":"pending",ts:Date.now()};
   S.logs[name].push(row);save();$("#f-val").value="";
   renderAll();toast(t("t.added")+" · +"+nf(val)+" "+(SPORT==="Walk/Run"?t("u.km"):SPORT==="Challenge"?t("u.pt"):t("u.min")));
-  if(api()){const b=$("#btn-add");b.disabled=true;await push({action:"add",row});b.disabled=false;}
+  if(api()){const b=$("#btn-add");b.disabled=true;await syncOrRevert({action:"add",row});b.disabled=false;}
 });
 
 /* ===== ME ===== */
 function renderMe(){
   const name=$("#sel-member").value,c=calc(name);
-  const ranked=MEMBERS.map(m=>({m,tt:calc(m).live})).sort((a,b)=>b.tt-a.tt);
+  const ranked=rankedList(),mine=ranked.find(x=>x.name===name);
   $("#m-live").textContent=nf(c.live);
   $("#m-total").textContent=nf(c.total);
   $("#m-left").textContent=c.live>=GOAL?"✓":nf(GOAL-c.live);
-  $("#m-rank").textContent="#"+(ranked.findIndex(x=>x.m===name)+1);
+  $("#m-rank").textContent=mine?"#"+mine.rank:"—";
   const nA=nextStep(c.km,WR),nB=nextStep(c.ses,BFP);
   const bars=(lv,cl)=>`<div class="lvbar ${cl}">${[1,2,3,4,5].map(i=>`<i class="${i<=lv?'on':''}"></i>`).join("")}</div>`;
   const pct=Math.min(100,Math.round(c.live/GOAL*100));
@@ -843,8 +888,14 @@ function renderMe(){
   $("#m-progress").innerHTML=`
    <div class="pbox"><div class="t"><b class="c-blue">${c.ptsA}${t("u.pt")}</b><span>🏃 ${nf(c.km)} ${t("u.km")}</span></div>
      ${bars(c.lvA,"c-blue")}<small>${nxt(nA,"nx.km")}</small></div>
-   <div class="pbox"><div class="t"><b class="c-red">${c.ptsB}${t("u.pt")}</b><span>🏸 ${c.ses} ${t("u.ses")}</span></div>
-     ${bars(c.lvB,"c-red")}<small>${nxt(nB,"nx.ses")}</small></div>
+   ${(c.perSport.some(x=>x.ses>0)?c.perSport.filter(x=>x.ses>0):[]).map(x=>{
+       const d=sportDef(x.sport),n=nextStep(x.ses,BFP);
+       return `<div class="pbox"><div class="t"><b style="color:${COLORS[d.c]}">${x.pts}${t("u.pt")}</b>
+         <span>${d.icon} ${x.ses} ${t("u.ses")}</span></div>
+         <div class="lvbar" style="color:${COLORS[d.c]}">${[1,2,3,4,5].map(i=>`<i class="${i<=x.lv?'on':''}"></i>`).join("")}</div>
+         <small>${esc(t(d.k))} · ${n?t("nx.ses").replace("{n}",n.need).replace("{l}",n.lv):t("nx.max")}</small></div>`;}).join("")
+     ||`<div class="pbox"><div class="t"><b class="c-red">0${t("u.pt")}</b><span>🏸 0 ${t("u.ses")}</span></div>
+        ${bars(0,"c-red")}<small>${esc(t("hint.perSport"))}</small></div>`}
    <div class="pbox"><div class="t"><b class="c-black">${c.bonus}${t("u.pt")}</b><span>⭐ ${esc(t("sp.bonus"))}</span></div>
      <div class="lvbar c-black"><i class="${c.bonus>0?'on':''}"></i></div><small>${esc(t("p.bonusNote"))}</small></div>
    <div class="pbox" style="background:${c.live>=GOAL?'#e4f7ee':'#fff3df'};border-color:transparent">
@@ -895,7 +946,7 @@ function renderLog(){
 
   $$("#log .sel-st").forEach(s=>s.addEventListener("change",async e=>{
     const i=+e.target.dataset.i;S.logs[name][i].status=e.target.value;save();renderAll();toast(t("t.updated"));
-    await push({action:"update",id:e.target.dataset.id,patch:{status:e.target.value}});}));
+    await syncOrRevert({action:"update",id:e.target.dataset.id,patch:{status:e.target.value}});}));
   $$("#log .ed").forEach(b=>b.addEventListener("click",()=>{
     EDITING=EDITING===b.dataset.id?null:b.dataset.id;renderLog();
     const sel=$("#e-sport");
@@ -912,13 +963,13 @@ function renderLog(){
       session:SESSION_SPORTS.includes(sp)?1:0,
       bonus:sp==="Challenge"?val:0,proof:$("#e-proof").value};
     Object.assign(S.logs[name][i],patch);save();EDITING=null;renderAll();toast(t("t.updated"));
-    await push({action:"update",id,patch});}));
+    await syncOrRevert({action:"update",id,patch});}));
   $$("#log .dl").forEach(b=>b.addEventListener("click",async()=>{
     const i=+b.dataset.i,id=b.dataset.id;
     const row=S.logs[name][i],d=sportDef(row.sport);
     if(!await confirmBox(t("dlg.delTitle"),`${d.icon} ${t(d.k)} · ${fmtDate(row.date)} · ${row.km?nf(row.km)+" "+t("u.km"):row.min?nf(row.min)+" "+t("u.min"):"+"+nf(row.bonus)+t("u.pt")}`))return;
     S.logs[name].splice(i,1);save();EDITING=null;renderAll();toast(t("t.deleted"));
-    await push({action:"delete",id});}));
+    await syncOrRevert({action:"delete",id});}));
 }
 
 /* ===== TEAM ===== */
@@ -932,7 +983,7 @@ function renderTeam(){
   $("#k-viral").textContent=nf(S.posts.length);
   $("#k-sports").textContent=sp.size+"/"+SPORT_COUNT;
 
-  const ranked=[...all].sort((a,b)=>b.live-a.live||b.total-a.total);
+  const ranked=rankedList();
   const me=$("#sel-member").value;
   const top=ranked.slice(0,3),rest=ranked.slice(3);
   const podOrder=[top[1],top[0],top[2]],podCls=["pod2","pod1","pod3"],podNo=["2","1","3"];
@@ -949,10 +1000,10 @@ function renderTeam(){
       <div style="position:relative;margin-top:8px"><span class="pill">${a.km?"🏃 "+nf(a.km)+" "+t("u.km"):a.ses?"🏸 "+a.ses+" "+t("u.ses"):"—"}</span></div>
     </button>`;}).join("");
 
-  $("#ranklist").innerHTML=rest.map((a,i)=>{
+  $("#ranklist").innerHTML=rest.map(a=>{
     const col=COLORS[RINGC[a.idx%5]],pct=Math.min(100,a.live/GOAL*100);
     return `<button class="lbc${a.name===me?" me":""}" data-m="${esc(a.name)}" title="${esc(a.name)}">
-      <span class="lbtop"><span class="lbrank">${i+4}</span>
+      <span class="lbtop"><span class="lbrank">${a.rank}</span>
         <span class="av2" style="background:${col}">${esc(initials(a.name))}</span></span>
       <span class="lbname">${esc(shortName(a.name))}</span>
       <span class="lbsc"><b style="color:${a.live>=GOAL?COLORS.green:"var(--ink)"}">${nf(a.live)}</b><span>/ 300</span></span>
@@ -992,11 +1043,11 @@ $("#btn-post").addEventListener("click",async()=>{
   const post={id:uid(),publisher:$("#p-publisher").value,date:$("#p-date").value,
     platform:$("#p-platform").value,sourceFrom:$("#p-source").value,url,ts:Date.now()};
   S.posts.push(post);save();$("#p-url").value="";renderAll();toast(t("t.added"));
-  if(api()){const b=$("#btn-post");b.disabled=true;await push({action:"post:add",post});b.disabled=false;}
+  if(api()){const b=$("#btn-post");b.disabled=true;await syncOrRevert({action:"post:add",post});b.disabled=false;}
 });
 $("#btn-folder").addEventListener("click",async()=>{
   S.team.folder=$("#in-folder").value.trim();save();toast(t("t.saved"));
-  await push({action:"team",team:S.team});});
+  await syncOrRevert({action:"team",team:S.team});});
 $("#btn-open-folder").addEventListener("click",()=>{
   const u=(S.team.folder||"").trim();
   if(!u)return toast(t("v.needFolder"));
@@ -1040,7 +1091,7 @@ function renderViral(){
     const po=S.posts.find(x=>x.id===b.dataset.id)||{};
     if(!await confirmBox(t("dlg.delPostTitle"),`${PLAT[po.platform]||"📣"} ${po.platform||""} · ${fmtDate(po.date)} · ${shortName(po.publisher||"")}`))return;
     S.posts=S.posts.filter(p=>p.id!==b.dataset.id);save();renderAll();toast(t("t.deleted"));
-    await push({action:"post:delete",id:b.dataset.id});}));
+    await syncOrRevert({action:"post:delete",id:b.dataset.id});}));
 
 }
 
@@ -1048,21 +1099,24 @@ function renderViral(){
 function groupStats(){
   const n=S.sessions.length;
   const sum=S.sessions.reduce((a,b)=>a+Number(b.members||0),0);
-  return {n,sum,avg:n?(Math.round(sum/n*10)/10):0,five:S.sessions.filter(x=>Number(x.members||0)>=5).length};
+  return {n,sum,avg:n?(Math.round(sum/n*10)/10):0,
+    two:S.sessions.filter(x=>Number(x.members||0)>=2).length,
+    five:S.sessions.filter(x=>Number(x.members||0)>=5).length};
 }
 $("#g-date").value=new Date().toISOString().slice(0,10);
 $("#btn-group").addEventListener("click",async()=>{
   const date=$("#g-date").value,act=$("#g-act").value,members=Number($("#g-members").value||0);
   if(!date)return toast(t("t.pickDate"));
-  if(members<1)return toast(t("group.needMembers"));
+  if(members<2)return toast(t("group.needMembers"));
   const ses={id:uid(),date,activity:act,members,ts:Date.now()};
   S.sessions.push(ses);save();$("#g-members").value="";renderAll();toast(t("t.added"));
-  if(api()){const b=$("#btn-group");b.disabled=true;await push({action:"group:add",session:ses});b.disabled=false;}
+  if(api()){const b=$("#btn-group");b.disabled=true;await syncOrRevert({action:"group:add",session:ses});b.disabled=false;}
 });
 function renderGroup(){
   const g=groupStats();
   $("#g-avg").textContent=g.n?nf(g.avg):"0";
   $("#g-five").textContent=g.five;
+  $("#g-two").textContent=g.two;
   $("#g-count").textContent=g.n;
   $("#g-listcount").textContent=g.n+" "+t("group.sessions");
   const rows=[...S.sessions].sort(byDateDesc);
@@ -1082,7 +1136,7 @@ function renderGroup(){
     const gr=S.sessions.find(x=>x.id===b.dataset.id)||{};
     if(!await confirmBox(t("dlg.delGroupTitle"),`${fmtDate(gr.date)} · ${nf(gr.members||0)} ${t("group.people")}`))return;
     S.sessions=S.sessions.filter(x=>x.id!==b.dataset.id);save();renderAll();toast(t("t.deleted"));
-    await push({action:"group:delete",id:b.dataset.id});}));
+    await syncOrRevert({action:"group:delete",id:b.dataset.id});}));
 }
 
 function renderAll(){renderTeam();renderViral();renderGroup();renderMe();}
